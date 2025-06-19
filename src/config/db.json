@@ -1,0 +1,136 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "user123@gmail.com",
+      "password": "user@123",
+      "otp": "056858"
+    },
+    {
+      "id": 2,
+      "email": "prathmasangani@gmail.com",
+      "password": "user@123",
+      "otp": "823566"
+    }
+  ],
+  "dashboard": {
+    "totalRegisteredStudents": 250,
+    "totalEntities": 250,
+    "totalEngagementTime": {
+      "hours": 150,
+      "minutes": 30
+    },
+    "totalActiveUsers": 1000,
+    "activeUsers24hrs": 569
+  },
+  "userDistribution": {
+    "totalUsers": 22145,
+    "countries": [
+      {
+        "country": "United States",
+        "users": 4000
+      },
+      {
+        "country": "China",
+        "users": 2000
+      },
+      {
+        "country": "India",
+        "users": 3000
+      },
+      {
+        "country": "Germany",
+        "users": 4000
+      },
+      {
+        "country": "United Kingdom",
+        "users": 2500
+      },
+      {
+        "country": "France",
+        "users": 1000
+      },
+      {
+        "country": "Japan",
+        "users": 6000
+      },
+      {
+        "country": "Canada",
+        "users": 2500
+      },
+      {
+        "country": "Australia",
+        "users": 4500
+      },
+      {
+        "country": "Brazil",
+        "users": 7000
+      }
+    ]
+  },
+  "stateDistribution": {
+    "totalUsers": 12039,
+    "states": [
+      {
+        "state": "State 1",
+        "percentage": 25
+      },
+      {
+        "state": "State 2",
+        "percentage": 25
+      },
+      {
+        "state": "State 3",
+        "percentage": 18
+      },
+      {
+        "state": "State 4",
+        "percentage": 15
+      },
+      {
+        "state": "State 5",
+        "percentage": 12
+      },
+      {
+        "state": "State 6",
+        "percentage": 10
+      },
+      {
+        "state": "State 7",
+        "percentage": 10
+      },
+      {
+        "state": "State 8",
+        "percentage": 8
+      },
+      {
+        "state": "State 9",
+        "percentage": 6
+      },
+      {
+        "state": "State 10",
+        "percentage": 5
+      }
+    ]
+  },
+  "trendingContent": {
+    "posts": [
+      {
+        "id": 1,
+        "title": "Black Lives Matter",
+        "image": "https://blog.westminster.ac.uk/international/wp-content/uploads/sites/54/2020/06/WhatsApp-Image-2020-06-08-at-17.53.51-3.jpeg"
+      },
+      {
+        "id": 2,
+        "title": "Labour Day",
+        "image": "https://blog.westminster.ac.uk/international/wp-content/uploads/sites/54/2020/06/WhatsApp-Image-2020-06-08-at-17.53.51-3.jpeg"
+      },
+      {
+        "id": 3,
+        "title": "Juneteenth",
+        "image": "https://blog.westminster.ac.uk/international/wp-content/uploads/sites/54/2020/06/WhatsApp-Image-2020-06-08-at-17.53.51-3.jpeg"
+      }
+    ],
+    "videos": []
+  }
+}
