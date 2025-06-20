@@ -45,33 +45,71 @@ const Userlogin = async (req: any, res: any) => {
 };
 
 // Resend Otp Api
-const sendOTP = async(req: any, res: any) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email required" });
+// const sendOTP = async (req: any, res: any) => {
+//   const { email } = req.body;
+//   if (!email) return res.status(400).json({ message: "Email required" });
 
-  const db = getDB();
-  const user = db.users.find((u: any) => u.email === email);
+//   const db = getDB();
+//   const user = db.users.find((u: any) => u.email === email);
 
-  if (!user) return res.status(404).json({ message: "User not found" });
+//   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const OTP = generateOtp(6);
-  user.otp = OTP;
+//   const OTP = generateOtp(4);
+//   user.otp = OTP;
 
-  saveDB(db);
+//   saveDB(db);
+//   const templateData = { email, OTP };
+
+//   await emailSender(
+//     email,
+//     EMAILCONSTANT.SEND_OTP.subject,
+//     templateData,
+//     EMAILCONSTANT.SEND_OTP.template
+//   );
+
+//   res.json({
+//     status: true,
+//     message: "OTP sent successfully",
+//     otp: OTP,
+//   });
+// };
+const sendOTP = async (req: any, res: any) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ status: false, message: "Email is required." });
+    }
+
+    const db = getDB();
+    const user = db.users.find((u: any) => u.email === email);
+
+    if (!user) {
+      return res.status(404).json({ status: false, message: "User not found." });
+    }
+
+    const OTP = generateOtp(4);
+    user.otp = OTP;
+    saveDB(db);
+
     const templateData = { email, OTP };
 
     await emailSender(
       email,
-      EMAILCONSTANT.RESEND_OTP.subject,
+      EMAILCONSTANT.SEND_OTP.subject,
       templateData,
-      EMAILCONSTANT.RESEND_OTP.template
+      EMAILCONSTANT.SEND_OTP.template
     );
 
-  res.json({
-    status: true,
-    message: "OTP sent successfully",
-    otp: OTP,
-  });
+    res.json({
+      status: true,
+      message: "OTP sent successfully.",
+    });
+
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ status: false, message: "Internal Server Error" });
+  }
 };
 
 // Verify User Otp

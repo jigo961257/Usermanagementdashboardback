@@ -40,6 +40,7 @@ const sendEmail = async (to: string, subject: string, template: string) => {
 };
 
 const emailSender = (to: string, subject: string, data: any, template: string) => {
+  // console.log("ggggg",to,subject,data)
   readHTMLFile(path.join(__dirname, `../../src/email_teamplates/${template}.html`), async (err: any, html: any) => {
     if (err) {
       console.error("Template reading failed:", err);
@@ -49,7 +50,6 @@ const emailSender = (to: string, subject: string, data: any, template: string) =
     try {
       const compiledTemplate = handlebars.compile(html);
       const htmlToSend = compiledTemplate(data);
-      console.log("htllll",htmlToSend)
       await sendEmail(to, subject, htmlToSend);
     } catch (e) {
       console.error("Template compiling failed:", e);

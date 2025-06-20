@@ -7,7 +7,7 @@ import dashboardRoutes from "./routes/dashboard"
 dotenv.config();
 
 const app: Application = express();
-const PORT = process.env.PORT || 6000;
+const PORT = process.env.PORT || 8001;
 
 app.use(cors());
 app.use(express.json());
