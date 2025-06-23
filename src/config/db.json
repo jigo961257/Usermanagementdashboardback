@@ -4,15 +4,148 @@
       "id": 1,
       "email": "user123@gmail.com",
       "password": "user@123",
+      "roleId": 1,
       "otp": null
     },
     {
       "id": 2,
       "email": "vidhibarot255@gmail.com",
       "password": "user@123",
-      "otp": "9770"
+      "roleId": 2,
+      "otp": "1234"
     }
   ],
+  "roles": [
+    {
+      "id": 1,
+      "roleName": "Admin"
+    },
+    {
+      "id": 2,
+      "roleName": "Teacher"
+    },
+    {
+      "id": 3,
+      "roleName": "Student"
+    },
+    {
+      "id": 4,
+      "roleName": "Parent"
+    }
+  ],
+  "adminRoles": [
+    {
+      "id": 1,
+      "adminRoleName": "System Admin"
+    },
+    {
+      "id": 2,
+      "adminRoleName": "School Admin"
+    }
+  ],
+  "admins": [
+    {
+      "id": 1,
+      "firstName": "Vidhi",
+      "lastName": "Barot",
+      "roleId": 1,
+      "adminRoleId": 1,
+      "email": "vidhibarot255@gmail.com",
+      "password": "vidhi@123",
+      "otp": null
+    },
+    {
+      "id": 2,
+      "firstName": "nidhi",
+      "lastName": "Barot",
+      "roleId": 1,
+      "adminRoleId": 2,
+      "email": "admin@gmail.com",
+      "password": "admin@123",
+      "otp": null
+    }
+  ],
+  "teachers": [
+    {
+      "id": 1,
+      "firstName": "parathama",
+      "lastName": "sangani",
+      "roleId": 2,
+      "subjectTaught": "Mathematics",
+      "currentEntity": "Springfield High School",
+      "email": "prathamasangani@gmail.com",
+      "password": "prathama@123",
+      "otp": null
+    },
+    {
+      "id": 2,
+      "firstName": "urmi",
+      "lastName": "Viradiya",
+      "roleId": 2,
+      "subjectTaught": "Science",
+      "currentEntity": "Springfield High School",
+      "email": "teacher@gmail.com",
+      "password": "teacher@123",
+      "otp": null
+    }
+  ],
+  "students": [
+    {
+      "id": 1,
+      "firstName": "dhruv",
+      "lastName": "Barot",
+      "roleId": 3,
+      "fathersName": "Ramesh Shah",
+      "mothersName": "Priya Shah",
+      "guardiansName": null,
+      "currentClass": "10th Grade",
+      "currentSection": "A",
+      "currentEntity": "Springfield High School",
+      "email": "dhruv@gmail.com",
+      "password": "dhruv@123",
+      "otp": null
+    },
+    {
+      "id": 2,
+      "firstName": "Gopi",
+      "lastName": "Barot",
+      "roleId": 3,
+      "fathersName": null,
+      "mothersName": "Sunita Desai",
+      "guardiansName": "Rajesh Patel",
+      "currentClass": "9th Grade",
+      "currentSection": "B",
+      "currentEntity": "Springfield High School",
+      "email": "student@gmail.com",
+      "password": "student@123",
+      "otp": null
+    }
+  ],
+  "parents": [
+    {
+      "id": 1,
+      "firstName": "darshita",
+      "lastName": "Pethani",
+      "roleId": 4,
+      "relationshipToStudent": "Father",
+      "linkedStudentId": 1,
+      "email": "darshita@gmail.com",
+      "password": "darshita123",
+      "otp": null
+    },
+    {
+      "id": 2,
+      "firstName": "ami",
+      "lastName": "Patel",
+      "roleId": 4,
+      "relationshipToStudent": "Guardian",
+      "linkedStudentId": 2,
+      "email": "parent@gmail.com",
+      "password": "parent@123",
+      "otp": null
+    }
+  ],
+
   "dashboard": {
     "totalRegisteredStudents": 250,
     "totalEntities": 250,

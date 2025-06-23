@@ -1,23 +1,34 @@
 import jwt from "jsonwebtoken";
 import { getDB, saveDB, generateOtp } from "../utils/dbUtils";
-import { emailSender } from "../middleware/email.helper";
-import { EMAILCONSTANT } from "../config/constants";
+import { emailSender } from "../services/email.helper";
+import { EMAILCONSTANT, roleTableMap } from "../config/constants";
+import { successResponse, errorResponse } from "../utils/reponseHandler";
 
+interface User {
+  email: string;
+  password: string;
+  roleName: string;
+}
 // User Login Api
 const Userlogin = async (req: any, res: any) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ message: "Email and Password required" });
+    const { email, password, roleName } = req.body as any;
+
+    if (!email || !password || !roleName)
+      return errorResponse(res, "Email, Password, and Role are required", 400);
 
     const db = getDB();
-    const user = db.users.find((u: any) => u.email === email);
+    const tableName = roleTableMap[roleName];
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const isMatch = password == user.password ? true : false;
-    if (!isMatch)
-      return res.status(400).json({ message: "Incorrect Password" });
+    const users = db[tableName];
+    const user = users.find((u: any) => u.email === email);
+
+    if (!user) return errorResponse(res, "User not found", 404);
+
+    if (user.password !== password)
+      return errorResponse(res, "Incorrect Password", 400);
 
     const payload = { id: user.id, email: user.email };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
@@ -27,69 +38,70 @@ const Userlogin = async (req: any, res: any) => {
       expiresIn: "7d",
     });
 
-    res.json({
-      status: true,
-      message: "Login Successful",
-      data: {
-        user_id: user.id,
-        email: user.email,
-        token: accessToken,
-        refreshToken,
-        roleName: "User",
-      },
-    });
+    const data = {
+      user_id: user.id,
+      email: user.email,
+      token: accessToken,
+      refreshToken,
+      roleName,
+    };
+
+    return successResponse(res, "Login Successful", data);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
+    return errorResponse(res, "Internal Server Error", 500);
   }
 };
+// const Userlogin = async (req: Request, res: any) => {
+//   try {
+//     const { email, password } = req.body as any;
+//     if (!email || !password)
+//       return errorResponse(res, "Email and Password required", 400);
+
+//     const db = getDB();
+//     const user = db.users.find((u: any) => u.email === email);
+
+//     if (!user) return errorResponse(res, "User not found", 404);
+
+//     const isMatch = password == user.password ? true : false;
+//     if (!isMatch) return errorResponse(res, "Incorrect Password", 400);
+
+//     const payload = { id: user.id, email: user.email };
+//     const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+//       expiresIn: "1h",
+//     });
+//     const refreshToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+//       expiresIn: "7d",
+//     });
+//     const data = {
+//       user_id: user.id,
+//       email: user.email,
+//       token: accessToken,
+//       refreshToken,
+//       roleName: "Admin",
+//     };
+
+//     return successResponse(res, "Login Successful", data);
+//   } catch (err) {
+//     console.error(err);
+//     return errorResponse(res, "Internal Server Error", 500);
+//   }
+// };
 
 // Resend Otp Api
-// const sendOTP = async (req: any, res: any) => {
-//   const { email } = req.body;
-//   if (!email) return res.status(400).json({ message: "Email required" });
-
-//   const db = getDB();
-//   const user = db.users.find((u: any) => u.email === email);
-
-//   if (!user) return res.status(404).json({ message: "User not found" });
-
-//   const OTP = generateOtp(4);
-//   user.otp = OTP;
-
-//   saveDB(db);
-//   const templateData = { email, OTP };
-
-//   await emailSender(
-//     email,
-//     EMAILCONSTANT.SEND_OTP.subject,
-//     templateData,
-//     EMAILCONSTANT.SEND_OTP.template
-//   );
-
-//   res.json({
-//     status: true,
-//     message: "OTP sent successfully",
-//     otp: OTP,
-//   });
-// };
 const sendOTP = async (req: any, res: any) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ status: false, message: "Email is required." });
-    }
+    if (!email) return errorResponse(res, "Email is required.", 400);
 
     const db = getDB();
     const user = db.users.find((u: any) => u.email === email);
 
-    if (!user) {
-      return res.status(404).json({ status: false, message: "User not found." });
-    }
+    if (!user) return errorResponse(res, "User not found.", 404);
 
     const OTP = generateOtp(4);
-    user.otp = OTP;
+    user.otp = "1234";
     saveDB(db);
 
     const templateData = { email, OTP };
@@ -101,37 +113,34 @@ const sendOTP = async (req: any, res: any) => {
       EMAILCONSTANT.SEND_OTP.template
     );
 
-    res.json({
-      status: true,
-      message: "OTP sent successfully.",
-    });
-
+    return successResponse(res, "OTP sent successfully");
   } catch (error) {
     console.error("Error sending OTP:", error);
-    res.status(500).json({ status: false, message: "Internal Server Error" });
+    return errorResponse(res, "Internal Server Error", 500);
   }
 };
 
 // Verify User Otp
 const verifyOtp = (req: any, res: any) => {
-  const { email, otp } = req.body;
+  try {
+    const { email, otp } = req.body;
 
-  if (!email || !otp)
-    return res.status(400).json({ message: "Email & OTP required" });
+    if (!email || !otp) return errorResponse(res, "Email & OTP required", 400);
 
-  const db = getDB();
-  const user = db.users.find((u: any) => u.email === email);
+    const db = getDB();
+    const user = db.users.find((u: any) => u.email === email);
 
-  if (!user) return res.status(404).json({ message: "User not found" });
-  if (user.otp !== otp) return res.status(400).json({ message: "Invalid OTP" });
+    if (!user) return errorResponse(res, "User not found", 404);
+    if (user.otp !== otp) return errorResponse(res, "Invalid OTP", 400);
 
-  user.otp = null;
-  saveDB(db);
+    user.otp = null;
+    saveDB(db);
 
-  res.json({
-    status: true,
-    message: "OTP verified successfully",
-  });
+    return successResponse(res, "OTP verified successfully");
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
 };
 
 export default { Userlogin, sendOTP, verifyOtp };

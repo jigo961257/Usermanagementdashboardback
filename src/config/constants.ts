@@ -4,3 +4,10 @@ export const EMAILCONSTANT = Object.freeze({
     LOGIN_PASSWORD: { template: "login_password", subject: "Login password" },
 
 });
+
+export const roleTableMap: Record<string, string> = {
+  Admin: "admins",
+  Teacher: "teachers",
+  Student: "students",
+  Parent: "parents",
+};
