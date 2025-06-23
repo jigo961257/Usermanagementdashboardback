@@ -6,7 +6,7 @@ const router = express.Router();
 // User Login Api
 router.post("/login", authController.Userlogin);
 
-// Resend Otp Api
+// Send Otp Api
 router.post("/sendotp", authController.sendOTP);
 
 // Verify User Otp

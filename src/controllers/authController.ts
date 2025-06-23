@@ -9,6 +9,7 @@ interface User {
   password: string;
   roleName: string;
 }
+
 // User Login Api
 const Userlogin = async (req: any, res: any) => {
   try {
@@ -52,51 +53,21 @@ const Userlogin = async (req: any, res: any) => {
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
-// const Userlogin = async (req: Request, res: any) => {
-//   try {
-//     const { email, password } = req.body as any;
-//     if (!email || !password)
-//       return errorResponse(res, "Email and Password required", 400);
 
-//     const db = getDB();
-//     const user = db.users.find((u: any) => u.email === email);
-
-//     if (!user) return errorResponse(res, "User not found", 404);
-
-//     const isMatch = password == user.password ? true : false;
-//     if (!isMatch) return errorResponse(res, "Incorrect Password", 400);
-
-//     const payload = { id: user.id, email: user.email };
-//     const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
-//       expiresIn: "1h",
-//     });
-//     const refreshToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
-//       expiresIn: "7d",
-//     });
-//     const data = {
-//       user_id: user.id,
-//       email: user.email,
-//       token: accessToken,
-//       refreshToken,
-//       roleName: "Admin",
-//     };
-
-//     return successResponse(res, "Login Successful", data);
-//   } catch (err) {
-//     console.error(err);
-//     return errorResponse(res, "Internal Server Error", 500);
-//   }
-// };
-
-// Resend Otp Api
+// Send Otp Api
 const sendOTP = async (req: any, res: any) => {
   try {
-    const { email } = req.body;
+    const { email, roleName } = req.body;
 
-    if (!email) return errorResponse(res, "Email is required.", 400);
+    if (!email || !roleName)
+      return errorResponse(res, "Email and Role are required.", 400);
 
     const db = getDB();
-    const user = db.users.find((u: any) => u.email === email);
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
+
+    const users = db[tableName];
+    const user = users.find((u: any) => u.email === email);
 
     if (!user) return errorResponse(res, "User not found.", 404);
 
@@ -113,7 +84,7 @@ const sendOTP = async (req: any, res: any) => {
       EMAILCONSTANT.SEND_OTP.template
     );
 
-    return successResponse(res, "OTP sent successfully");
+    return successResponse(res, "OTP sent successfully.");
   } catch (error) {
     console.error("Error sending OTP:", error);
     return errorResponse(res, "Internal Server Error", 500);
@@ -123,12 +94,17 @@ const sendOTP = async (req: any, res: any) => {
 // Verify User Otp
 const verifyOtp = (req: any, res: any) => {
   try {
-    const { email, otp } = req.body;
+    const { email, otp, roleName } = req.body;
 
-    if (!email || !otp) return errorResponse(res, "Email & OTP required", 400);
+    if (!email || !otp || !roleName)
+      return errorResponse(res, "Email, OTP, and Role are required.", 400);
 
     const db = getDB();
-    const user = db.users.find((u: any) => u.email === email);
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
+
+    const users = db[tableName];
+    const user = users.find((u: any) => u.email === email);
 
     if (!user) return errorResponse(res, "User not found", 404);
     if (user.otp !== otp) return errorResponse(res, "Invalid OTP", 400);
@@ -136,7 +112,23 @@ const verifyOtp = (req: any, res: any) => {
     user.otp = null;
     saveDB(db);
 
-    return successResponse(res, "OTP verified successfully");
+    const payload = { id: user.id, email: user.email };
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: "1h",
+    });
+    const refreshToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: "7d",
+    });
+
+    const data = {
+      user_id: user.id,
+      email: user.email,
+      token: accessToken,
+      refreshToken,
+      roleName,
+    };
+
+    return successResponse(res, "OTP verified successfully.", data);
   } catch (error) {
     console.error("Error verifying OTP:", error);
     return errorResponse(res, "Internal Server Error", 500);
