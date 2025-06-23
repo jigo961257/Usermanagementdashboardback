@@ -14,7 +14,7 @@ interface User {
 const Userlogin = async (req: any, res: any) => {
   try {
     const { email, password, roleName } = req.body as any;
-
+console.log("requuu",req?.body)
     if (!email || !password || !roleName)
       return errorResponse(res, "Email, Password, and Role are required", 400);
 
