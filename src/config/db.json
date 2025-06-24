@@ -46,9 +46,9 @@
   "admins": [
     {
       "id": 1,
-      "email": "admin@gmail.com",
-      "password": "admin@123",
-      "otp": "1234",
+      "email": "student@gmail.com",
+      "password": "student@123",
+      "otp": null,
       "roleName": "Student"
     }
   ],

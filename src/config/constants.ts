@@ -6,6 +6,7 @@ export const EMAILCONSTANT = Object.freeze({
 });
 
 export const roleTableMap: Record<string, string> = {
+  SuperAdmin:"admins",
   Admin: "admins",
   Teacher: "teachers",
   Student: "students",
