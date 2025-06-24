@@ -26,9 +26,9 @@ beforeEach(() => {
     {
       id: 1,
       email: "student@gmail.com",
-      password: "student@123",
+      password: "student123",
       otp: null,
-      roleName:"Student"
+      roleName: "Student",
     },
   ];
   saveDB(db);
@@ -38,11 +38,10 @@ describe("Auth Routes", () => {
   describe("POST /login", () => {
     it("should login successfully with correct credentials", async () => {
       const res = await request(app).post("/login").send({
-        email:"student@gmail.com",
-        password: "student@123",
+        email: "student@gmail.com",
+        password: "student123",
         roleName: "Student",
       });
-console.log("ress....",res.body)
       expect(res.statusCode).toBe(200);
       expect(res.body.status).toBe(true);
       expect(res.body.data.token).toBeDefined();
@@ -52,13 +51,9 @@ console.log("ress....",res.body)
 
     it("should fail login with wrong password", async () => {
       const res = await request(app).post("/login").send({
-        // email: testEmail,
-        // password: "wrongpassword",
-        // roleName: testRole,
-                email:"student@gmail.com",
-        password: "student@123",
+        email: "student@gmail.com",
+        password: "student1293",
         roleName: "Student",
-
       });
 
       expect(res.statusCode).toBe(400);
@@ -66,43 +61,48 @@ console.log("ress....",res.body)
       expect(res.body.message).toBe("Incorrect Password");
     });
 
-    // it("should fail login with missing fields", async () => {
-    //   const res = await request(app).post("/login").send({
-    //             email:"student@gmail.com",
-    //     password: "student@123",
-    //     roleName: "Student",
+    it("should fail login with missing fields", async () => {
+      const res = await request(app).post("/login").send({
+        email: "student@gmail.com",
+        password: "student@123",
+      });
 
-    //     // email: testEmail,
-    //     // password: testPassword,
-    //     // missing roleName
-    //   });
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe("Email, Password, and Role are required");
+    });
 
-    //   expect(res.statusCode).toBe(400);
-    //   expect(res.body.message).toBe("Email, Password, and Role are required");
-    // });
+    it("User not found", async () => {
+      const res = await request(app).post("/login").send({
+        email: "student1@gmail.com",
+        password: "student@123",
+        roleName: "Student",
+      });
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe("User not found");
+    });
   });
 
-  // describe("POST /send-otp", () => {
-  //   it("should send OTP successfully", async () => {
-  //     const res = await request(app).post("/send-otp").send({
-  //       email: testEmail,
-  //       roleName: testRole,
-  //     });
+  describe("POST /send-otp", () => {
+    it("should send OTP successfully", async () => {
+      const res = await request(app).post("/send-otp").send({
+        email: testEmail,
+        roleName: testRole,
+      });
 
-  //     expect(res.statusCode).toBe(200);
-  //     expect(res.body.message).toBe("OTP sent successfully.");
-  //   });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe("OTP sent successfully.");
+    });
 
-  //   it("should fail to send OTP for unknown user", async () => {
-  //     const res = await request(app).post("/send-otp").send({
-  //       email: "unknown@example.com",
-  //       roleName: testRole,
-  //     });
+    // it("should fail to send OTP for unknown user", async () => {
+    //   const res = await request(app).post("/send-otp").send({
+    //     email: "unknown@example.com",
+    //     roleName: testRole,
+    //   });
 
-  //     expect(res.statusCode).toBe(404);
-  //     expect(res.body.message).toBe("User not found.");
-  //   });
-  // });
+    //   expect(res.statusCode).toBe(404);
+    //   expect(res.body.message).toBe("User not found.");
+    // });
+  });
 
   // describe("POST /verify-otp", () => {
   //   it("should verify OTP successfully", async () => {

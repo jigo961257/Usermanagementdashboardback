@@ -10,6 +10,7 @@ interface User {
   password: string;
   roleName: string;
 }
+
 //Register User
 const registerUser = async (req: any, res: any) => {
   try {
@@ -53,10 +54,10 @@ const registerUser = async (req: any, res: any) => {
         .eq("email", email)
         .maybeSingle();
 
-      if (error && error.code !== "PGRST116") {
-        console.error(error);
-        return errorResponse(res, "Error checking email existence", 500);
-      }
+      // if (error && error.code !== "PGRST116") {
+      //   console.error(error);
+      //   return errorResponse(res, "Error checking email existence", 500);
+      // }
       if (data) {
         return errorResponse(res, `Email already exists in ${table}`, 400);
       }
@@ -157,27 +158,39 @@ const sendOTP = async (req: any, res: any) => {
     if (!email || !roleName)
       return errorResponse(res, "Email and Role are required.", 400);
 
-    const db = getDB();
     const tableName = roleTableMap[roleName];
     if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const users = db[tableName];
-    const user = users.find((u: any) => u.email === email);
+    const { data: user, error } = await supabase
+      .from(tableName)
+      .select("id, email")
+      .eq("email", email)
+      .single();
 
-    if (!user) return errorResponse(res, "User not found.", 404);
+    if (error || !user) return errorResponse(res, "User not found.", 404);
 
-    const OTP = generateOtp(4);
-    user.otp = "1234";
-    saveDB(db);
+    // const OTP = generateOtp(4);
+    const OTP="1234"
 
-    const templateData = { email, OTP };
+    // 👇 Store OTP temporarily in the user's record
+    const { error: updateError } = await supabase
+      .from(tableName)
+      .update({ otp: OTP })
+      .eq("id", user.id);
 
-    await emailSender(
-      email,
-      EMAILCONSTANT.SEND_OTP.subject,
-      templateData,
-      EMAILCONSTANT.SEND_OTP.template
-    );
+    if (updateError) {
+      console.error(updateError);
+      return errorResponse(res, "Failed to save OTP", 500);
+    }
+
+    // const templateData = { email, OTP };
+
+    // await emailSender(
+    //   email,
+    //   EMAILCONSTANT.SEND_OTP.subject,
+    //   templateData,
+    //   EMAILCONSTANT.SEND_OTP.template
+    // );
 
     return successResponse(res, "OTP sent successfully.");
   } catch (error) {
@@ -187,27 +200,36 @@ const sendOTP = async (req: any, res: any) => {
 };
 
 // Verify User Otp
-const verifyOtp = (req: any, res: any) => {
+const verifyOtp = async (req: any, res: any) => {
   try {
     const { email, otp, roleName } = req.body;
 
     if (!email || !otp || !roleName)
       return errorResponse(res, "Email, OTP, and Role are required.", 400);
 
-    const db = getDB();
     const tableName = roleTableMap[roleName];
     if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const users = db[tableName];
-    const user = users.find((u: any) => u.email === email);
+    const { data: user, error } = await supabase
+      .from(tableName)
+      .select("id, email, otp")
+      .eq("email", email)
+      .single();
 
-    if (!user) return errorResponse(res, "User not found", 404);
+    if (error || !user) return errorResponse(res, "User not found", 404);
     if (user.otp !== otp) return errorResponse(res, "Invalid OTP", 400);
 
-    user.otp = null;
-    saveDB(db);
+    const { error: clearOtpError } = await supabase
+      .from(tableName)
+      .update({ otp: null })
+      .eq("id", user.id);
 
-    const payload = { id: user.id, email: user.email };
+    if (clearOtpError) {
+      console.error(clearOtpError);
+      return errorResponse(res, "Failed to clear OTP after verification", 500);
+    }
+
+    const payload = { id: user.id, email: user.email, roleName };
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
       expiresIn: "1h",
     });
@@ -218,9 +240,9 @@ const verifyOtp = (req: any, res: any) => {
     const data = {
       user_id: user.id,
       email: user.email,
+      roleName,
       token: accessToken,
       refreshToken,
-      roleName,
     };
 
     return successResponse(res, "OTP verified successfully.", data);
@@ -229,5 +251,6 @@ const verifyOtp = (req: any, res: any) => {
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
+
 
 export default { Userlogin, sendOTP, verifyOtp, registerUser };

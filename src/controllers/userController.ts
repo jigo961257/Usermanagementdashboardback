@@ -156,9 +156,20 @@ const getUserById = async (req: any, res: any) => {
     const tableName = roleTableMap[roleName];
     if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
+    // const { data, error } = await supabase
+    //   .from(tableName)
+    //   .select("*")
+    //   .eq("id", id)
+    //   .single();
+
     const { data, error } = await supabase
       .from(tableName)
-      .select("*")
+      .select(
+        `
+    *,
+    roles ( name )
+  `
+      )
       .eq("id", id)
       .single();
 
@@ -178,7 +189,11 @@ const getAllUsers = async (req: any, res: any) => {
     const tableName = roleTableMap[roleName];
     if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const { data, error } = await supabase.from(tableName).select("*");
+    // const { data, error } = await supabase.from(tableName).select("*");
+    const { data, error } = await supabase.from(tableName).select(`
+        *,
+        roles ( name )
+      `);
 
     if (error) return errorResponse(res, "Error fetching users", 500);
     return successResponse(res, "Users fetched successfully", data);
