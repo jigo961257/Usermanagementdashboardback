@@ -9,6 +9,6 @@ export const roleTableMap: Record<string, string> = {
   SuperAdmin:"admins",
   Admin: "admins",
   Teacher: "teachers",
-  Student: "students",
-  Parent: "parents",
+  Student: "student",
+  Parent: "parent",
 };
