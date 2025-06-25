@@ -7,8 +7,8 @@ const router = express.Router();
 // Regiter User
 router.post("/register", authController.registerUser);
 
-// // User Login Api
-// router.post("/login", authController.Userlogin);
+// User Login Api
+router.post("/login", authController.Userlogin);
 
 // // Send Otp Api
 // router.post("/sendotp", authController.sendOTP);

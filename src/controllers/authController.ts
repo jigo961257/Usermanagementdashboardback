@@ -52,7 +52,6 @@ const registerUser = async (req: any, res: any) => {
           last_name,
           email,
           password: hashedPassword,
-        //   status: "active", // Optional, handled by default too
         },
       ])
       .select()
@@ -70,53 +69,67 @@ const registerUser = async (req: any, res: any) => {
   }
 };
 
-// // User Login Api
-// const Userlogin = async (req: any, res: any) => {
-//   try {
-//     const { email, password, roleName } = req.body;
+// User Login Api
+const Userlogin = async (req: any, res: any) => {
+  try {
+    const { email, password } = req.body;
 
-//     if (!email || !password || !roleName)
-//       return errorResponse(res, "Email, Password, and Role are required", 400);
+    if (!email || !password) {
+      return errorResponse(res, "Email and Password are required", 400);
+    }
 
-//     const tableName = roleTableMap[roleName];
-//     if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
+    const { data: user, error: userError } = await supabase
+      .from("users")
+      .select("id, email, password, first_name, last_name, role_id")
+      .eq("email", email)
+      .maybeSingle();
 
-//     const { data: user, error } = await supabase
-//       .from(tableName)
-//       .select("id, email, password, first_name, last_name, role_id")
-//       .eq("email", email)
-//       .single();
+    if (userError || !user) {
+      return errorResponse(res, "User not found", 404);
+    }
 
-//     if (error || !user) return errorResponse(res, "User not found", 404);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return errorResponse(res, "Incorrect Password", 400);
+    }
 
-//     const isPasswordValid = await bcrypt.compare(password, user.password);
-//     if (!isPasswordValid) return errorResponse(res, "Incorrect Password", 400);
+    const { data: role, error: roleError } = await supabase
+      .from("roles")
+      .select("id, name")
+      .eq("id", user.role_id)
+      .maybeSingle();
 
-//     const payload = { id: user.id, email: user.email, roleName };
-//     const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
-//       expiresIn: "1h",
-//     });
-//     const refreshToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
-//       expiresIn: "7d",
-//     });
+    const payload = {
+      id: user.id,
+      email: user.email,
+      roleName: role?.name||null,
+    };
 
-//     const data = {
-//       user_id: user.id,
-//       email: user.email,
-//       first_name: user.first_name,
-//       last_name: user.last_name,
-//       role_id: user.role_id,
-//       roleName,
-//       token: accessToken,
-//       refreshToken,
-//     };
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: "1h",
+    });
 
-//     return successResponse(res, "Login Successful", data);
-//   } catch (err) {
-//     console.error(err);
-//     return errorResponse(res, "Internal Server Error", 500);
-//   }
-// };
+    const refreshToken = jwt.sign(payload, process.env.JWT_SECRET as string, {
+      expiresIn: "7d",
+    });
+
+    const responseData = {
+      user_id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      role_id: user.role_id,
+      role_name: role?.name || null,
+      token: accessToken,
+      refreshToken,
+    };
+
+    return successResponse(res, "Login Successful", responseData);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+};
 
 // // Send Otp Api
 // const sendOTP = async (req: any, res: any) => {
@@ -221,4 +234,4 @@ const registerUser = async (req: any, res: any) => {
 // };
 
 
-export default {  registerUser };
+export default {  registerUser,Userlogin };
