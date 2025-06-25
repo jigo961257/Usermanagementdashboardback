@@ -13,10 +13,10 @@ router.put("/update/:id", userController.updateUser);
 router.delete("/delete/:id", userController.deleteUser);
 
 // Get User By Id
-router.post("/get/:id", userController.getUserById);
+router.get("/get/:id", userController.getUserById);
 
 // Get All User Data
-router.post("/getAll", userController.getAllUsers);
+router.get("/getAll", userController.getAllUsers);
 
 
 export default router;

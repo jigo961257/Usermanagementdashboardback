@@ -70,124 +70,110 @@ const addUser = async (req: any, res: any) => {
 // Update User Data
 const updateUser = async (req: any, res: any) => {
   try {
+    const { roleName, email, ...updateFields } = req.body;
     const { id } = req.params;
-    const { email, first_name, last_name } = req.body;
 
-    if (!id) return errorResponse(res, "User ID is required", 400);
-    if (!email || !first_name || !last_name) {
-      return errorResponse(res, "First name, last name, and email are required", 400);
-    }
-
-    const { data: userExists, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (!userExists) {
-      return errorResponse(res, "User not found", 404);
-    }
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
     const { data: existing, error: existingError } = await supabase
-      .from("users")
+      .from(tableName)
       .select("id")
       .eq("email", email)
       .neq("id", id)
-      .maybeSingle();
+      .single();
 
-    if (existing && existing.id) {
+    if (existing && existing.id)
       return errorResponse(res, "Email already exists for another user", 400);
+    const { data: role, error: roleError } = await supabase
+      .from("roles")
+      .select("id")
+      .eq("name", roleName)
+      .single();
+
+    if (roleError || !role) {
+      console.error(roleError);
+      return errorResponse(
+        res,
+        "Role ID not found for provided Role Name",
+        400
+      );
     }
 
-    const { data: updatedUser, error: updateError } = await supabase
-      .from("users")
-      .update({ first_name, last_name, email })
+    const role_id = role.id;
+
+    let updatedData = { ...updateFields, email, role_id };
+    // if (password) {
+    //   const hashedPassword = await bcrypt.hash(password, 10);
+    //   updatedData.password = hashedPassword;
+    // }
+
+    const { data, error } = await supabase
+      .from(tableName)
+      .update(updatedData)
       .eq("id", id)
       .select()
       .single();
 
-    if (updateError) {
-      console.error(updateError);
-      return errorResponse(res, "Failed to update user", 500);
-    }
-
-    return successResponse(res, "User updated successfully", updatedUser);
+    if (error) return errorResponse(res, "Error updating user", 500);
+    return successResponse(res, "User updated successfully", data);
   } catch (err) {
     console.error(err);
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
 
-
 // Delete User Data
 const deleteUser = async (req: any, res: any) => {
   try {
+    const { roleName } = req.body;
     const { id } = req.params;
 
-    if (!id) return errorResponse(res, "User ID is required", 400);
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const { data: existingUser, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", id)
-      .maybeSingle();
-
-    if (!existingUser) {
-      return errorResponse(res, "User not found", 404);
-    }
-
-    const { data: deletedUser, error } = await supabase
-      .from("users")
+    const { data, error } = await supabase
+      .from(tableName)
       .delete()
       .eq("id", id)
       .select()
       .single();
 
-    if (error) {
-      console.error(error);
-      return errorResponse(res, "Error deleting user", 500);
-    }
-
-    return successResponse(res, "User deleted successfully", deletedUser);
+    if (error) return errorResponse(res, "Error deleting user", 500);
+    return successResponse(res, "User deleted successfully", data);
   } catch (err) {
     console.error(err);
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
 
-
 // Get User By Id
 const getUserById = async (req: any, res: any) => {
   try {
+    const { roleName } = req.body;
     const { id } = req.params;
 
-    if (!id) return errorResponse(res, "User ID is required", 400);
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
-    const { data: existingUser, error: userError } = await supabase
-      .from("users")
-      .select("id")
-      .eq("id", id)
-      .maybeSingle();
-
-
-    if (!existingUser) {
-      return errorResponse(res, "User not found", 404);
-    }
+    // const { data, error } = await supabase
+    //   .from(tableName)
+    //   .select("*")
+    //   .eq("id", id)
+    //   .single();
 
     const { data, error } = await supabase
-      .from("users")
-      .select(`
-        id, first_name, last_name, email, status, role_id,
-        roles ( name )
-      `)
+      .from(tableName)
+      .select(
+        `
+    *,
+    roles ( name )
+  `
+      )
       .eq("id", id)
       .single();
 
-    if (error) {
-      console.error(error);
-      return errorResponse(res, "Failed to fetch user", 500);
-    }
-
+    if (error) return errorResponse(res, "User not found", 404);
     return successResponse(res, "User fetched successfully", data);
   } catch (err) {
     console.error(err);
@@ -195,27 +181,27 @@ const getUserById = async (req: any, res: any) => {
   }
 };
 
-
 // Get All User Data
 const getAllUsers = async (req: any, res: any) => {
   try {
-    const { data, error } = await supabase.from("users").select(`
-      id, first_name, last_name, email, status, role_id,
-      roles ( name )
-    `);
+    const { roleName } = req.body;
 
-    if (error) {
-      console.error(error);
-      return errorResponse(res, "Error fetching users", 500);
-    }
+    const tableName = roleTableMap[roleName];
+    if (!tableName) return errorResponse(res, "Invalid Role Name", 400);
 
+    // const { data, error } = await supabase.from(tableName).select("*");
+    const { data, error } = await supabase.from(tableName).select(`
+        *,
+        roles ( name )
+      `);
+
+    if (error) return errorResponse(res, "Error fetching users", 500);
     return successResponse(res, "Users fetched successfully", data);
   } catch (err) {
     console.error(err);
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
-
 
 export default {
   addUser,
