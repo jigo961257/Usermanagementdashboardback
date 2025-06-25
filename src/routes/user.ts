@@ -18,5 +18,7 @@ router.get("/get/:id", userController.getUserById);
 // Get All User Data
 router.get("/getAll", userController.getAllUsers);
 
+// Update User Status
+router.post("/updatestatus/:id", userController.updateUserStatus);
 
 export default router;

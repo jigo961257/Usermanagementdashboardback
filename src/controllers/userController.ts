@@ -118,7 +118,6 @@ const updateUser = async (req: any, res: any) => {
   }
 };
 
-
 // Delete User Data
 const deleteUser = async (req: any, res: any) => {
   try {
@@ -154,7 +153,6 @@ const deleteUser = async (req: any, res: any) => {
     return errorResponse(res, "Internal Server Error", 500);
   }
 };
-
 
 // Get User By Id
 const getUserById = async (req: any, res: any) => {
@@ -195,7 +193,6 @@ const getUserById = async (req: any, res: any) => {
   }
 };
 
-
 // Get All User Data
 const getAllUsers = async (req: any, res: any) => {
   try {
@@ -216,6 +213,45 @@ const getAllUsers = async (req: any, res: any) => {
   }
 };
 
+// Update User Status
+const updateUserStatus = async (req: any, res: any) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!id) return errorResponse(res, "User ID is required", 400);
+    
+    if (!status || !["Active", "Inactive"].includes(status))
+      return errorResponse(res, "Valid status is required: 'Active' or 'Inactive'", 400);
+
+    const { data: existingUser, error: userError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!existingUser) return errorResponse(res, "User not found", 404);
+
+    const { data: updatedUser, error: updateError } = await supabase
+      .from("users")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error(updateError);
+      return errorResponse(res, "Failed to update user status", 500);
+    }
+
+    return successResponse(res, "User status updated successfully", updatedUser);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+};
+
+
 
 export default {
   addUser,
@@ -223,4 +259,5 @@ export default {
   deleteUser,
   getUserById,
   getAllUsers,
+  updateUserStatus
 };
