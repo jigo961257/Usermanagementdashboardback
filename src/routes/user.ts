@@ -1,5 +1,6 @@
 import express from "express";
 import userController from "../controllers/userController";
+const upload = require("../services/fileupload")
 
 const router = express.Router();
 
@@ -26,5 +27,9 @@ router.get("/get/profile/:profileId", userController.getUserByProfileId);
 
 // Get Unarchive Users
 router.get("/unarchiveuser", userController.getUnarchiveUser);
+
+// Add CSV Data
+router.post("/upload-csv", upload.single("file"),userController.addCsvData)
+
 
 export default router;

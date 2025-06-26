@@ -2,6 +2,9 @@ import { supabase } from "../supabseClient";
 import bcrypt from "bcrypt";
 import { successResponse, errorResponse } from "../utils/reponseHandler";
 import { roleTableMap } from "../config/constants";
+import fs from 'fs';
+import csv from 'csv-parser';
+import path from 'path';
 
 // Add User Data
 const addUser = async (req: any, res: any) => {
@@ -175,7 +178,7 @@ const getUserById = async (req: any, res: any) => {
     const { data, error } = await supabase
       .from("users")
       .select(`
-        id, first_name, last_name, email, status, role_id,
+        id, first_name, last_name, email, status, role_id,profile_id,
         roles ( name )
       `)
       .eq("id", id)
@@ -197,7 +200,7 @@ const getUserById = async (req: any, res: any) => {
 const getAllUsers = async (req: any, res: any) => {
   try {
     const { data, error } = await supabase.from("users").select(`
-      id, first_name, last_name, email, status, role_id,
+      id, first_name, last_name, email, status, role_id,profile_id,
       roles ( name )
     `).eq("status", "Active");
 
@@ -299,6 +302,41 @@ const getUnarchiveUser = async (req: any, res: any) => {
   }
 };
 
+// Add CSV Data
+const addCsvData = async (req: any, res: any) => {
+  try {
+    const file = req.file;
+    console.log("filelle",file)
+    if (!file) return res.status(400).json({ message: 'CSV file is required' });
+
+    const results: any[] = [];
+    const filePath = path.join(__dirname, '../uploads', file.filename);
+
+    fs.createReadStream(filePath)
+      .pipe(csv())
+      .on('data', (data) => {
+        console.log("datata",data)
+        results.push({
+          first_name: data.first_name,
+          last_name: data.last_name,
+        });
+      })
+      .on('end', async () => {
+        const { error } = await supabase.from('bulkusers').insert(results);
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ message: 'Failed to insert data', error });
+        }
+        res.status(200).json({ message: 'CSV data inserted successfully' });
+      });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+
+
 export default {
   addUser,
   updateUser,
@@ -307,5 +345,6 @@ export default {
   getAllUsers,
   updateUserStatus,
   getUserByProfileId,
-  getUnarchiveUser
+  getUnarchiveUser,
+  addCsvData
 };
