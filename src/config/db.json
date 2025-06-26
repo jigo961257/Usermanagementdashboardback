@@ -13,6 +13,13 @@
       "password": "user@123",
       "roleId": 2,
       "otp": "1234"
+    },
+    {
+      "id": 99,
+      "first_name": "Existing",
+      "last_name": "User",
+      "email": "existing@example.com",
+      "password": "hashed_password"
     }
   ],
   "roles": [
@@ -46,10 +53,9 @@
   "admins": [
     {
       "id": 1,
-      "email": "student@gmail.com",
-      "password": "student123",
-      "otp": null,
-      "roleName": "Student"
+      "email": "superadmin@gmail.com",
+      "password": "superadmin123",
+      "otp": null
     }
   ],
   "teachers": [

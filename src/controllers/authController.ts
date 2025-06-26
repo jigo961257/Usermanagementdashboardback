@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import { successResponse, errorResponse } from "../utils/reponseHandler";
 import bcrypt from "bcrypt";
 import { supabase } from "../supabseClient";
+import { v4 as uuidv4 } from "uuid";
 interface User {
   email: string;
   password: string;
@@ -25,7 +26,6 @@ const registerUser = async (req: any, res: any) => {
         400
       );
     }
-
     const { data: existingUser, error: emailError } = await supabase
       .from("users")
       .select("id")
@@ -43,6 +43,21 @@ const registerUser = async (req: any, res: any) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    //For Registration Using Authentication:-
+    // const { data, error } = await supabase.auth.signUp({
+    //   email: email,
+    //   password: hashedPassword,
+    // });
+    //For Sign in with authentication
+    // const { data, error } = await supabase.auth.signInWithPassword({
+    //   email: "test@example.com",
+    //   password: "your_password"
+    // });
+    const firstPart = first_name.trim().toLowerCase().slice(0, 3);
+    const lastPart = last_name.trim().toLowerCase().slice(0, 3);
+    const uniqueSuffix = uuidv4().slice(0, 6); // 6-char random string
+    const profile_id = `${firstPart}_${lastPart}_${uniqueSuffix}`;
+
     const { data: newUser, error: insertError } = await supabase
       .from("users")
       .insert([
@@ -51,6 +66,7 @@ const registerUser = async (req: any, res: any) => {
           last_name,
           email,
           password: hashedPassword,
+          profile_id,
         },
       ])
       .select()

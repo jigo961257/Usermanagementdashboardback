@@ -199,7 +199,8 @@ const getAllUsers = async (req: any, res: any) => {
     const { data, error } = await supabase.from("users").select(`
       id, first_name, last_name, email, status, role_id,
       roles ( name )
-    `);
+    `).eq("status", "Active");
+
 
     if (error) {
       console.error(error);
@@ -251,7 +252,52 @@ const updateUserStatus = async (req: any, res: any) => {
   }
 };
 
+// Get User By Profile Id
+const getUserByProfileId = async (req: any, res: any) => {
+  try {
+    const { profileId } = req.params;
 
+    if (!profileId) return errorResponse(res, "Profile ID is required", 400);
+
+    const { data, error } = await supabase
+      .from("users")
+      .select(`
+        id, first_name, last_name, email, status, role_id, profile_id,
+        roles ( name )
+      `)
+      .eq("profile_id", profileId)
+      .maybeSingle();
+
+
+    if (!data) return errorResponse(res, "User not found", 404);
+
+    return successResponse(res, "User fetched successfully", data);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+};
+
+// Get Unarchive Users
+const getUnarchiveUser = async (req: any, res: any) => {
+  try {
+    const { data, error } = await supabase.from("users").select(`
+      id, first_name, last_name, email, status, role_id,
+      roles ( name )
+    `).eq("status", "Inactive");
+
+
+    if (error) {
+      console.error(error);
+      return errorResponse(res, "Error fetching users", 500);
+    }
+
+    return successResponse(res, "Users fetched successfully", data);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+};
 
 export default {
   addUser,
@@ -259,5 +305,7 @@ export default {
   deleteUser,
   getUserById,
   getAllUsers,
-  updateUserStatus
+  updateUserStatus,
+  getUserByProfileId,
+  getUnarchiveUser
 };

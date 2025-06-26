@@ -21,4 +21,10 @@ router.get("/getAll", userController.getAllUsers);
 // Update User Status
 router.post("/updatestatus/:id", userController.updateUserStatus);
 
+// Get User By Profile Id
+router.get("/get/profile/:profileId", userController.getUserByProfileId);
+
+// Get Unarchive Users
+router.get("/unarchiveuser", userController.getUnarchiveUser);
+
 export default router;
