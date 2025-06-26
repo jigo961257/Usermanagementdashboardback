@@ -31,5 +31,7 @@ router.get("/unarchiveuser", userController.getUnarchiveUser);
 // Add CSV Data
 router.post("/upload-csv", upload.single("file"),userController.addCsvData)
 
+// Ger CSV Data
+router.get("/getcsvdata", userController.getCsvData)
 
 export default router;

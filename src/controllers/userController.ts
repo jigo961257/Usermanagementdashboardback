@@ -302,7 +302,7 @@ const getUnarchiveUser = async (req: any, res: any) => {
   }
 };
 
-// Add CSV Data
+// Add User CSV Data
 const addCsvData = async (req: any, res: any) => {
   try {
     const file = req.file;
@@ -335,7 +335,25 @@ const addCsvData = async (req: any, res: any) => {
   }
 };
 
+// Get All User CSV Data
+const getCsvData = async (req: any, res: any) => {
+  try {
+    const { data, error } = await supabase.from("bulkusers").select(`
+      id, first_name, last_name
+    `);
 
+
+    if (error) {
+      console.error(error);
+      return errorResponse(res, "Error fetching users", 500);
+    }
+
+    return successResponse(res, "Users fetched successfully", data);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, "Internal Server Error", 500);
+  }
+};
 
 export default {
   addUser,
@@ -346,5 +364,6 @@ export default {
   updateUserStatus,
   getUserByProfileId,
   getUnarchiveUser,
-  addCsvData
+  addCsvData,
+  getCsvData
 };
