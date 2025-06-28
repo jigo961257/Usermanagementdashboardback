@@ -202,14 +202,15 @@ const getAllUsers = async (req: any, res: any) => {
     const { data, error } = await supabase.from("users").select(`
       id, first_name, last_name, email, status, role_id,profile_id,
       roles ( name )
-    `).eq("status", "Active")
-     .neq("role_id", "97718f98-1d79-46a0-9e0f-e39ada2d665c");
+    `).eq("status", "Active");
 
 
     if (error) {
       console.error(error);
       return errorResponse(res, "Error fetching users", 500);
     }
+
+    data = data.filter(e => e.role_id !== "97718f98-1d79-46a0-9e0f-e39ada2d665c")
 
     return successResponse(res, "Users fetched successfully", data);
   } catch (err) {
@@ -225,7 +226,7 @@ const updateUserStatus = async (req: any, res: any) => {
     const { status } = req.body;
 
     if (!id) return errorResponse(res, "User ID is required", 400);
-    
+
     if (!status || !["Active", "Inactive"].includes(status))
       return errorResponse(res, "Valid status is required: 'Active' or 'Inactive'", 400);
 
@@ -307,7 +308,7 @@ const getUnarchiveUser = async (req: any, res: any) => {
 const addCsvData = async (req: any, res: any) => {
   try {
     const file = req.file;
-    console.log("filelle",file)
+    console.log("filelle", file)
     if (!file) return res.status(400).json({ message: 'CSV file is required' });
 
     const results: any[] = [];
@@ -316,7 +317,7 @@ const addCsvData = async (req: any, res: any) => {
     fs.createReadStream(filePath)
       .pipe(csv())
       .on('data', (data) => {
-        console.log("datata",data)
+        console.log("datata", data)
         results.push({
           first_name: data.first_name,
           last_name: data.last_name,
