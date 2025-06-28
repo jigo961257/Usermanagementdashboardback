@@ -202,7 +202,8 @@ const getAllUsers = async (req: any, res: any) => {
     const { data, error } = await supabase.from("users").select(`
       id, first_name, last_name, email, status, role_id,profile_id,
       roles ( name )
-    `).eq("status", "Active");
+    `).eq("status", "Active")
+    .not.eq("role_id", "97718f98-1d79-46a0-9e0f-e39ada2d665c");;
 
 
     if (error) {
