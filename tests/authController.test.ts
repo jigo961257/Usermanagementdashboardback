@@ -5,6 +5,7 @@ import { getDB, saveDB } from "../src/utils/dbUtils";
 import { roleTableMap } from "../src/config/constants";
 import authController from "../src/controllers/authController";
 
+process.env.JWT_SECRET = "mysecret";
 // Setup express app for isolated testing
 const app = express();
 app.use(bodyParser.json());
@@ -13,7 +14,7 @@ app.post("/login", authController.Userlogin);
 app.post("/sendotp", authController.sendOTP);
 app.post("/verifyotp", authController.verifyOtp);
 
-const testEmail = "user@example.com";
+const testEmail = "superadmin@gmail.com";
 const testPassword = "123456";
 const testRole = "Admin"; // should match your roleTableMap
 const OTP_VALUE = "1234"; // Matches your current hardcoded OTP logic
@@ -24,10 +25,9 @@ beforeEach(() => {
   db[table] = [
     {
       id: 1,
-      email: "student@gmail.com",
-      password: "student@123",
+      email: "superadmin@gmail.com",
+      password: "superadmin123",
       otp: null,
-      roleName:"Student"
     },
   ];
   saveDB(db);
@@ -37,11 +37,9 @@ describe("Auth Routes", () => {
   describe("POST /login", () => {
     it("should login successfully with correct credentials", async () => {
       const res = await request(app).post("/login").send({
-        email:"student@gmail.com",
-        password: "student@123",
-        roleName: "Student",
+        email: "superadmin@gmail.com",
+        password: "superadmin123",
       });
-// console.log("ress....",res)
       expect(res.statusCode).toBe(200);
       expect(res.body.status).toBe(true);
       expect(res.body.data.token).toBeDefined();
@@ -51,13 +49,9 @@ describe("Auth Routes", () => {
 
     it("should fail login with wrong password", async () => {
       const res = await request(app).post("/login").send({
-        // email: testEmail,
-        // password: "wrongpassword",
-        // roleName: testRole,
-                email:"student@gmail.com",
-        password: "student@123",
+        email: "superadmin@gmail.com",
+        password: "student1293",
         roleName: "Student",
-
       });
 
       expect(res.statusCode).toBe(400);
@@ -65,43 +59,81 @@ describe("Auth Routes", () => {
       expect(res.body.message).toBe("Incorrect Password");
     });
 
-    it("should fail login with missing fields", async () => {
+    it("User not found", async () => {
       const res = await request(app).post("/login").send({
-                email:"student@gmail.com",
+        email: "student1@gmail.com",
         password: "student@123",
-        roleName: "Student",
-
-        // email: testEmail,
-        // password: testPassword,
-        // missing roleName
       });
-
-      expect(res.statusCode).toBe(400);
-      expect(res.body.message).toBe("Email, Password, and Role are required");
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe("User not found");
     });
   });
 
-  // describe("POST /send-otp", () => {
-  //   it("should send OTP successfully", async () => {
-  //     const res = await request(app).post("/send-otp").send({
-  //       email: testEmail,
-  //       roleName: testRole,
-  //     });
+  describe("POST /sendotp", () => {
+    it("should send OTP successfully", async () => {
+      const res = await request(app).post("/sendotp").send({
+        email: testEmail,
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe("OTP sent successfully.");
+    });
 
-  //     expect(res.statusCode).toBe(200);
-  //     expect(res.body.message).toBe("OTP sent successfully.");
-  //   });
+    it("should fail to send OTP for unknown user", async () => {
+      const res = await request(app).post("/sendotp").send({
+        email: "unknown@example.com",
+      });
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe("User not found.");
+    });
+  });
+  
+  describe("POST /verifyotp", () => {
+    it("OTP verify successfully", async () => {
+      const res = await request(app).post("/verifyotp").send({
+        email: testEmail,
+        otp: "1234",
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.body.message).toBe("OTP verified successfully.");
+    });
 
-  //   it("should fail to send OTP for unknown user", async () => {
-  //     const res = await request(app).post("/send-otp").send({
-  //       email: "unknown@example.com",
-  //       roleName: testRole,
-  //     });
+    it("Please add mail and otp", async () => {
+      const res = await request(app).post("/verifyotp").send({
+        email: "",
+        otp: "",
+      });
+      console.log("rererrerre", res?.body);
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe("Email and OTP are required.");
+    });
 
-  //     expect(res.statusCode).toBe(404);
-  //     expect(res.body.message).toBe("User not found.");
-  //   });
-  // });
+    it("User not available for verify otp", async () => {
+      const res = await request(app).post("/verifyotp").send({
+        email: "unknown@example.com",
+        otp: "1234",
+      });
+      console.log("rererrerre", res?.body);
+      expect(res.statusCode).toBe(404);
+      expect(res.body.message).toBe("User not found");
+    });
+    it("Invalid Otp", async () => {
+      const res = await request(app).post("/verifyotp").send({
+        email: testEmail,
+        otp: "12345",
+      });
+      console.log("rererrerre", res?.body);
+      expect(res.statusCode).toBe(400);
+      expect(res.body.message).toBe("Invalid OTP");
+    });
+
+    // it("should fail to send OTP for unknown user", async () => {
+    //   const res = await request(app).post("/sendotp").send({
+    //     email: "unknown@example.com",
+    //   });
+    //   expect(res.statusCode).toBe(404);
+    //   expect(res.body.message).toBe("User not found.");
+    // });
+  });
 
   // describe("POST /verify-otp", () => {
   //   it("should verify OTP successfully", async () => {
