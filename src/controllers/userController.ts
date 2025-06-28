@@ -203,7 +203,7 @@ const getAllUsers = async (req: any, res: any) => {
       id, first_name, last_name, email, status, role_id,profile_id,
       roles ( name )
     `).eq("status", "Active")
-     .eq("role_id", "97718f98-1d79-46a0-9e0f-e39ada2d665c");
+     .neq("role_id", "97718f98-1d79-46a0-9e0f-e39ada2d665c");
 
 
     if (error) {
