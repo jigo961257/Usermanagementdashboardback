@@ -210,7 +210,7 @@ const getAllUsers = async (req: any, res: any) => {
       return errorResponse(res, "Error fetching users", 500);
     }
 
-    return successResponse(res, "Users fetched successfully", data.filter(e => e.role_id !== "97718f98-1d79-46a0-9e0f-e39ada2d665c"));
+    return successResponse(res, "Users fetched successfully", data.filter(e => e.role_id !== "97718f98-1d79-46a0-9e0f-e39ada2d665c") || []);
   } catch (err) {
     console.error(err);
     return errorResponse(res, "Internal Server Error", 500);
